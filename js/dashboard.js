@@ -35,13 +35,40 @@ document.getElementById('createAdminForm').addEventListener('submit', async (e) 
     const email = document.getElementById('newAdminEmail').value;
     const password = document.getElementById('newAdminPassword').value;
     
+    if (password.length < 6) {
+        alert('❌ Password must be at least 6 characters!');
+        return;
+    }
+    
     try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        alert('✅ Admin created successfully!');
+        // Create user in Firebase Authentication
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // Save admin info in Firestore
+        await addDoc(collection(db, 'admins'), {
+            uid: user.uid,
+            email: email,
+            role: 'admin',
+            createdAt: new Date().toISOString()
+        });
+        
+        alert('✅ Admin account created successfully!\n📧 Email: ' + email);
         adminModal.classList.add('hidden');
         document.getElementById('createAdminForm').reset();
     } catch (error) {
-        alert('❌ Error: ' + error.message);
+        let errorMessage = error.message;
+        
+        // User-friendly error messages
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage = 'This email is already registered!';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage = 'Invalid email address!';
+        } else if (error.code === 'auth/weak-password') {
+            errorMessage = 'Password is too weak! Use at least 6 characters.';
+        }
+        
+        alert('❌ Error: ' + errorMessage);
     }
 });
 

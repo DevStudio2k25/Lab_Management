@@ -14,6 +14,8 @@ loginForm.addEventListener('submit', async (e) => {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     
+    messageDiv.innerHTML = '<span class="text-blue-600">⏳ Logging in...</span>';
+    
     try {
         await signInWithEmailAndPassword(auth, email, password);
         messageDiv.innerHTML = '<span class="text-green-600">✅ Login successful! Redirecting...</span>';
@@ -21,6 +23,19 @@ loginForm.addEventListener('submit', async (e) => {
             window.location.href = '/dashboard.html';
         }, 1000);
     } catch (error) {
-        messageDiv.innerHTML = `<span class="text-red-600">❌ ${error.message}</span>`;
+        let errorMessage = error.message;
+        
+        // User-friendly error messages
+        if (error.code === 'auth/user-not-found') {
+            errorMessage = 'No account found with this email!';
+        } else if (error.code === 'auth/wrong-password') {
+            errorMessage = 'Incorrect password!';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage = 'Invalid email address!';
+        } else if (error.code === 'auth/invalid-credential') {
+            errorMessage = 'Invalid email or password!';
+        }
+        
+        messageDiv.innerHTML = `<span class="text-red-600">❌ ${errorMessage}</span>`;
     }
 });
