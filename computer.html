@@ -5,51 +5,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Computer Details</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))",
+                        },
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive))",
+                            foreground: "hsl(var(--destructive-foreground))",
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --primary: 240 5.9% 10%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 240 4.8% 95.9%;
+            --secondary-foreground: 240 5.9% 10%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --border: 240 5.9% 90%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 0 0% 98%;
+        }
+    
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-8">
-    <div class="container mx-auto px-6 max-w-2xl">
+<body class="bg-muted/30 min-h-screen text-foreground py-8 px-4 flex justify-center">
+    <div class="w-full max-w-lg space-y-6">
         <!-- Computer Details Card -->
-        <div class="bg-white rounded-2xl shadow-2xl p-8 mb-6">
-            <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">💻 Computer Details</h1>
-            
-            <div id="computerInfo" class="space-y-4">
-                <!-- Computer info will be loaded here -->
+        <div class="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
+            <div class="p-6">
+                <h1 class="text-2xl font-semibold tracking-tight mb-4">Computer Details</h1>
+                <div id="computerInfo" class="space-y-4">
+                    <!-- Computer info will be loaded here -->
+                    <p class="text-sm text-muted-foreground animate-pulse">Loading info...</p>
+                    </div>
             </div>
         </div>
 
         <!-- Submit Review Section -->
-        <div class="bg-white rounded-2xl shadow-2xl p-8">
-            <h2 class="text-2xl font-bold mb-4 text-gray-800">📝 Submit Review</h2>
-            <form id="reviewForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-2">Status</label>
-                    <select id="reviewStatus" required
-                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">Select Status</option>
-                        <option value="Working">✅ Working</option>
-                        <option value="Not Working">❌ Not Working</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Comment (Optional)</label>
-                    <textarea id="reviewComment" rows="3" placeholder="Any additional comments..."
-                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">
-                    Submit Review
-                </button>
-            </form>
+        <div class="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
+            <div class="p-6">
+                <h2 class="text-lg font-semibold tracking-tight mb-4">Submit Review</h2>
+                <form id="reviewForm" class="space-y-4">
+                    <div class="space-y-2">
+                        <label
+                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Status</label>
+                        <select id="reviewStatus" required
+                            class="flex h-9 w-full items-center justify-between rounded-md border border-border bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
+                            <option value="">Select Status</option>
+                            <option value="Working">✅ Working</option>
+                            <option value="Not Working">❌ Not Working</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Comment
+                            <span class="text-muted-foreground font-normal">(Optional)</span></label>
+                        <textarea id="reviewComment" rows="3" placeholder="Any additional comments..."
+                            class="flex min-h-[80px] w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground disabled:cursor-not-allowed disabled:opacity-50"></textarea>
+                    </div>
+                    <button type="submit"
+                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 w-full">
+                        Submit Review
+                    </button>
+                    </form>
+            </div>
         </div>
 
         <!-- Reviews Section -->
-        <div class="bg-white rounded-2xl shadow-2xl p-8 mt-6">
-            <h2 class="text-2xl font-bold mb-4 text-gray-800">📋 Reviews (New → Old)</h2>
-            <div id="reviewsList" class="space-y-3">
-                <!-- Reviews will be loaded here -->
+        <div class="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold tracking-tight">Reviews</h2>
+                    <span class="text-xs text-muted-foreground border px-2 py-0.5 rounded-full">Newest first</span>
+                </div>
+                <div id="reviewsList" class="space-y-3">
+                    <!-- Reviews will be loaded here -->
+                </div>
             </div>
         </div>
     </div>
 
-    <script type="module" src="/js/computer.js"></script>
+    <script type="module" src="./js/computer.js"></script>
 </body>
 </html>

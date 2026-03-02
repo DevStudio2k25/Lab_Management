@@ -3,71 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Lab Management Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))",
+                        },
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive))",
+                            foreground: "hsl(var(--destructive-foreground))",
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --primary: 240 5.9% 10%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 240 4.8% 95.9%;
+            --secondary-foreground: 240 5.9% 10%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --border: 240 5.9% 90%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 0 0% 98%;
+        }
+    
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- Header -->
-    <header class="bg-white shadow-md">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-800">🏫 Lab Management Dashboard</h1>
-            <div class="flex gap-4">
-                <button id="createAdminBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-                    ➕ Create Admin
-                </button>
-                <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
-                    Logout
-                </button>
-            </div>
-        </div>
+<body class="bg-muted/30 min-h-screen text-foreground flex flex-col">
+    <!-- Top Bar -->
+    <header class="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-border bg-background px-4 sm:px-6">
+        <div class="font-semibold text-lg mr-auto">Lab Manager</div>
+        <button id="createAdminBtn"
+            class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-secondary text-secondary-foreground hover:bg-secondary/80 h-9 px-4">
+            + New Admin
+        </button>
+        <button id="logoutBtn"
+            class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background hover:bg-muted h-9 px-4">
+            Logout
+        </button>
     </header>
-
-    <div class="container mx-auto px-6 py-8">
-        <!-- Create Lab Section -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 class="text-xl font-bold mb-4">Create New Lab</h2>
-            <form id="createLabForm" class="flex gap-4">
-                <input type="text" id="labName" placeholder="Lab Name (e.g., Computer Lab 1)" required
-                    class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-                    Create Lab
-                </button>
-            </form>
+    <!-- Main Content -->
+    <main class="flex-1 p-4 sm:p-6 sm:max-w-6xl mx-auto w-full">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <button id="addLabBtn"
+                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4">
+                + Add Lab
+            </button>
+    </div>
+<!-- Labs Grid -->
+<div id="labsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <!-- Labs will be loaded here -->
         </div>
+    </main>
 
-        <!-- Labs List -->
-        <div id="labsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Labs will be loaded here -->
+    <!-- Create Lab Modal -->
+    <div id="createLabModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-card rounded-lg border border-border shadow-lg w-full max-w-sm p-6 relative">
+            <div class="flex flex-col space-y-1.5 mb-4">
+                <h3 class="font-semibold leading-none tracking-tight text-lg">Create New Lab</h3>
+                <p class="text-sm text-muted-foreground">Enter a name for the new computer lab.</p>
+            </div>
+            <form id="createLabForm" class="space-y-4">
+                <div class="space-y-2">
+                    <label class="text-sm font-medium leading-none">Lab Name</label>
+                    <input type="text" id="labName" placeholder="e.g. Computer Lab 1" required
+                        class="flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground">
+                </div>
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-2">
+                    <button type="button" id="closeLabModal"
+                        class="mt-2 sm:mt-0 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background hover:bg-muted h-9 px-4">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4">
+                        Create Lab
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Create Admin Modal -->
-    <div id="adminModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-8 w-full max-w-md">
-            <h2 class="text-2xl font-bold mb-6">Create New Admin</h2>
+    <div id="adminModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-card rounded-lg border border-border shadow-lg w-full max-w-sm p-6 relative">
+            <div class="flex flex-col space-y-1.5 mb-4">
+                <h3 class="font-semibold leading-none tracking-tight text-lg">Create New Admin</h3>
+                <p class="text-sm text-muted-foreground">Add a new administrator account.</p>
+            </div>
             <form id="createAdminForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-2">Email</label>
-                    <input type="email" id="newAdminEmail" required
-                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <div class="space-y-2">
+                    <label
+                        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Email</label>
+                    <input type="email" id="newAdminEmail" required placeholder="admin@example.com"
+                        class="flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground disabled:cursor-not-allowed disabled:opacity-50">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Password</label>
-                    <input type="password" id="newAdminPassword" required
-                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <div class="space-y-2">
+                    <label
+                        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Password</label>
+                    <input type="password" id="newAdminPassword" required placeholder="••••••••"
+                        class="flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground disabled:cursor-not-allowed disabled:opacity-50">
                 </div>
-                <div class="flex gap-4">
-                    <button type="submit" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
-                        Create
-                    </button>
-                    <button type="button" id="closeAdminModal" class="flex-1 bg-gray-400 text-white py-2 rounded-lg hover:bg-gray-500">
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-2">
+                    <button type="button" id="closeAdminModal"
+                        class="mt-2 sm:mt-0 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background hover:bg-muted h-9 px-4">
                         Cancel
+                    </button>
+                    <button type="submit"
+                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4">
+                        Create
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <script type="module" src="/js/dashboard.js"></script>
+    <script type="module" src="./js/dashboard.js"></script>
 </body>
 </html>

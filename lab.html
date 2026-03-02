@@ -6,44 +6,139 @@
     <title>Lab Details</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))",
+                        },
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive))",
+                            foreground: "hsl(var(--destructive-foreground))",
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --primary: 240 5.9% 10%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 240 4.8% 95.9%;
+            --secondary-foreground: 240 5.9% 10%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --border: 240 5.9% 90%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 0 0% 98%;
+        }
+    
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-muted/30 min-h-screen text-foreground flex flex-col">
     <!-- Header -->
-    <header class="bg-white shadow-md">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div>
-                <a href="/dashboard.html" class="text-blue-600 hover:underline">← Back to Dashboard</a>
-                <h1 id="labTitle" class="text-2xl font-bold text-gray-800 mt-2"></h1>
-            </div>
-            <button id="bulkDownloadBtn" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-                📥 Bulk Download QR
+    <header class="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-border bg-background px-4 sm:px-6">
+        <a href="./dashboard.html"
+            class="inline-flex items-center text-sm font-medium transition-colors hover:text-foreground/80 text-foreground">
+            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            <span class="hidden sm:inline">Dashboard</span>
+        </a>
+        <h1 id="labTitle" class="text-sm font-semibold ml-2 sm:ml-4 truncate">Loading Lab...</h1>
+    
+        <div class="ml-auto flex items-center gap-2">
+            <button id="openAddComputerModal"
+                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4">
+                + Computer
+            </button>
+            <button id="bulkDownloadBtn"
+                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background hover:bg-muted h-9 px-3 sm:px-4">
+                <svg class="sm:mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                <span class="hidden sm:inline">Bulk QR</span>
             </button>
         </div>
     </header>
 
-    <div class="container mx-auto px-6 py-8">
-        <!-- Add Computer Section -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 class="text-xl font-bold mb-4">Add New Computer</h2>
-            <form id="addComputerForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input type="number" id="computerNumber" placeholder="Computer Number" required
-                    class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                <input type="text" id="computerDetails" placeholder="Details (e.g., i5, 8GB RAM)" required
-                    class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                <input type="text" id="computerPassword" placeholder="Student Password" required
-                    class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 md:col-span-3">
-                    Add Computer
-                </button>
-            </form>
+    <main class="flex-1 p-4 sm:p-6 sm:max-w-6xl mx-auto w-full">
+        <!-- Computers List Header -->
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-semibold leading-none tracking-tight text-lg">Lab Computers</h2>
         </div>
-
-        <!-- Computers List -->
-        <div id="computersList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    
+        <!-- Computers Grid -->
+        <div id="computersList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <!-- Computers will be loaded here -->
+        </div>
+    </main>
+    
+    <!-- Add Computer Modal -->
+    <div id="computerModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-card rounded-lg border border-border shadow-lg w-full max-w-md p-6 relative">
+            <div class="flex flex-col space-y-1.5 mb-6">
+                <h3 class="font-semibold leading-none tracking-tight text-lg">Add New Computer</h3>
+                <p class="text-sm text-muted-foreground">Enter the details of the computer to add it to the lab.</p>
+            </div>
+            <form id="addComputerForm" class="space-y-4">
+                <div class="space-y-2">
+                    <label class="text-sm font-medium leading-none">Computer Number</label>
+                    <input type="number" id="computerNumber" placeholder="e.g. 101" required
+                        class="flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-medium leading-none">System Details</label>
+                    <input type="text" id="computerDetails" placeholder="e.g. i5, 8GB RAM" required
+                        class="flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-medium leading-none">Computer Password</label>
+                    <input type="text" id="computerPassword" placeholder="e.g. password123" required
+                        class="flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground">
+                </div>
+    
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4">
+                    <button type="button" id="closeComputerModal"
+                        class="mt-2 sm:mt-0 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background hover:bg-muted h-9 px-4">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4">
+                        Add Computer
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <script type="module" src="/js/lab.js"></script>
+    <script type="module" src="./js/lab.js"></script>
 </body>
 </html>
