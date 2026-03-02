@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div>
+                <a href="/dashboard.html" class="text-blue-600 hover:underline">← Back to Dashboard</a>
+                <h1 id="labTitle" class="text-2xl font-bold text-gray-800 mt-2"></h1>
+            </div>
+            <button id="bulkDownloadBtn" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                📥 Bulk Download QR
+            </button>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Add Computer Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-bold mb-4">Add New Computer</h2>
+            <form id="addComputerForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="number" id="computerNumber" placeholder="Computer Number" required
+                    class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="computerDetails" placeholder="Details (e.g., i5, 8GB RAM)" required
+                    class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="computerPassword" placeholder="Student Password" required
+                    class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 md:col-span-3">
+                    Add Computer
+                </button>
+            </form>
+        </div>
+
+        <!-- Computers List -->
+        <div id="computersList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Computers will be loaded here -->
+        </div>
+    </div>
+
+    <script type="module" src="/js/lab.js"></script>
+</body>
+</html>

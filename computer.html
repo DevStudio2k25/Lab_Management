@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-8">
+    <div class="container mx-auto px-6 max-w-2xl">
+        <!-- Computer Details Card -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8 mb-6">
+            <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">💻 Computer Details</h1>
+            
+            <div id="computerInfo" class="space-y-4">
+                <!-- Computer info will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Submit Review Section -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">📝 Submit Review</h2>
+            <form id="reviewForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Status</label>
+                    <select id="reviewStatus" required
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Select Status</option>
+                        <option value="Working">✅ Working</option>
+                        <option value="Not Working">❌ Not Working</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Comment (Optional)</label>
+                    <textarea id="reviewComment" rows="3" placeholder="Any additional comments..."
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">
+                    Submit Review
+                </button>
+            </form>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8 mt-6">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">📋 Reviews (New → Old)</h2>
+            <div id="reviewsList" class="space-y-3">
+                <!-- Reviews will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/js/computer.js"></script>
+</body>
+</html>
