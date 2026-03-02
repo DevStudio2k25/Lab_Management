@@ -1,12 +1,12 @@
 // Firebase Configuration
-// NOTE: Add these values in Vercel Environment Variables
+// Environment variables will be loaded from Vercel
 const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "YOUR_API_KEY",
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "YOUR_AUTH_DOMAIN",
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "YOUR_PROJECT_ID",
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "YOUR_STORAGE_BUCKET",
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "YOUR_SENDER_ID",
-    appId: import.meta.env.VITE_FIREBASE_APP_ID || "YOUR_APP_ID"
+    apiKey: "AIzaSyCOuoe7uShX9QB5dK4hfAeB2PQ5p2JI4eg",
+    authDomain: "lab-management-1.firebaseapp.com",
+    projectId: "lab-management-1",
+    storageBucket: "lab-management-1.firebasestorage.app",
+    messagingSenderId: "326898209928",
+    appId: "1:326898209928:web:b2276e58f77d271b407b3d"
 };
 
 export default firebaseConfig;
