@@ -84,8 +84,8 @@
                         <select id="reviewStatus" required
                             class="flex h-9 w-full items-center justify-between rounded-md border border-border bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
                             <option value="">Select Status</option>
-                            <option value="Working">✅ Working</option>
-                            <option value="Not Working">❌ Not Working</option>
+                            <option value="Working">Working</option>
+                            <option value="Not Working">Not Working</option>
                         </select>
                     </div>
                     <div class="space-y-2">
@@ -106,8 +106,15 @@
         <div class="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-semibold tracking-tight">Reviews</h2>
-                    <span class="text-xs text-muted-foreground border px-2 py-0.5 rounded-full">Newest first</span>
+                    <h2 class="text-lg font-semibold tracking-tight flex items-center gap-2">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                            </path>
+                        </svg>
+                        History
+                    </h2>
+                    <span class="text-xs text-muted-foreground border px-2 py-0.5 rounded-full">Recent</span>
                 </div>
                 <div id="reviewsList" class="space-y-3">
                     <!-- Reviews will be loaded here -->
@@ -117,5 +124,7 @@
     </div>
 
     <script type="module" src="./js/computer.js"></script>
+<!-- Toast Notification Container -->
+<div id="toastContainer" class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 </body>
 </html>

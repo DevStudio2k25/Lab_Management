@@ -45,6 +45,13 @@
   <body class="flex items-center justify-center min-h-screen bg-muted/30 p-4">
     <div class="bg-background border border-border rounded-xl shadow-sm w-full max-w-[350px] p-6">
       <div class="flex flex-col space-y-1.5 text-center mb-6">
+        <div class="flex justify-center mb-2">
+          <svg class="h-8 w-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+            </path>
+          </svg>
+        </div>
         <h3 class="font-semibold tracking-tight text-2xl text-foreground">Admin Login</h3>
         <p class="text-sm text-muted-foreground">Enter your email below to login</p>
       </div>
@@ -83,9 +90,10 @@
           Sign In
         </button>
       </form>
+    </div>
 
-      <div id="message" class="mt-4 text-center text-sm font-medium"></div>
-      </div>
     <script type="module" src="./js/login.js"></script>
-  </body>
+<!-- Toast Notification Container -->
+<div id="toastContainer" class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+</body>
 </html>

@@ -5,40 +5,46 @@ import firebaseConfig from './firebase-config.js';
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Set persistence to LOCAL (user stays logged in)
+// Set persistence to LOCAL
 setPersistence(auth, browserLocalPersistence);
 
-const loginForm = document.getElementById('loginForm');
-const messageDiv = document.getElementById('message');
+// UI UTILITIES
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `flex items-center w-full max-w-xs p-4 text-sm bg-card border rounded-lg shadow-lg pointer-events-auto animate-in slide-in-from-right-full duration-300 ${type === 'error' ? 'border-destructive/50 text-destructive' : 'border-border text-foreground'}`;
 
-loginForm.addEventListener('submit', async (e) => {
+    const icon = type === 'error'
+        ? `<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+        : `<svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+
+    toast.innerHTML = `${icon}<span>${message}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.replace('slide-in-from-right-full', 'slide-out-to-right-full');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    
-    messageDiv.innerHTML = '<span class="text-muted-foreground">Logging in...</span>';
+    const btn = e.target.querySelector('button');
     
     try {
+        btn.disabled = true;
+        btn.textContent = 'Signing in...';
         await signInWithEmailAndPassword(auth, email, password);
-        messageDiv.innerHTML = '<span class="text-foreground">Login successful! Redirecting...</span>';
-        setTimeout(() => {
-            window.location.href = './dashboard.html';
-        }, 1000);
+        showToast('Login successful! Redirecting...');
+        setTimeout(() => window.location.href = './dashboard.html', 1000);
     } catch (error) {
-        let errorMessage = error.message;
-        
-        // User-friendly error messages
-        if (error.code === 'auth/user-not-found') {
-            errorMessage = 'No account found with this email.';
-        } else if (error.code === 'auth/wrong-password') {
-            errorMessage = 'Incorrect password.';
-        } else if (error.code === 'auth/invalid-email') {
-            errorMessage = 'Invalid email address.';
-        } else if (error.code === 'auth/invalid-credential') {
-            errorMessage = 'Invalid email or password.';
-        }
-        
-        messageDiv.innerHTML = `<span class="text-red-500">${errorMessage}</span>`;
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+        let msg = error.message;
+        if (error.code === 'auth/invalid-credential') msg = 'Invalid email or password';
+        showToast(msg, 'error');
     }
 });
+

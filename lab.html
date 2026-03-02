@@ -71,12 +71,22 @@
             </svg>
             <span class="hidden sm:inline">Dashboard</span>
         </a>
-        <h1 id="labTitle" class="text-sm font-semibold ml-2 sm:ml-4 truncate">Loading Lab...</h1>
+        <h1 id="labTitle" class="text-sm font-semibold ml-2 sm:ml-4 truncate flex items-center gap-2">
+            <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                </path>
+            </svg>
+            Loading Lab...
+        </h1>
     
         <div class="ml-auto flex items-center gap-2">
             <button id="openAddComputerModal"
                 class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4">
-                + Computer
+                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Computer
             </button>
             <button id="bulkDownloadBtn"
                 class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background hover:bg-muted h-9 px-3 sm:px-4">
@@ -92,7 +102,14 @@
     <main class="flex-1 p-4 sm:p-6 sm:max-w-6xl mx-auto w-full">
         <!-- Computers List Header -->
         <div class="flex items-center justify-between mb-4">
-            <h2 class="font-semibold leading-none tracking-tight text-lg">Lab Computers</h2>
+            <h2 class="font-semibold leading-none tracking-tight text-lg flex items-center gap-2">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                    </path>
+                </svg>
+                Lab Computers
+            </h2>
         </div>
     
         <!-- Computers Grid -->
@@ -140,5 +157,42 @@
     </div>
 
     <script type="module" src="./js/lab.js"></script>
+<!-- Toast Notification Container -->
+<div id="toastContainer" class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- Custom Confirmation Modal -->
+<div id="confirmModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+    <div
+        class="bg-card rounded-lg border border-border shadow-lg w-full max-w-sm p-6 relative animate-in fade-in zoom-in duration-200">
+        <h3 id="confirmTitle" class="font-semibold leading-none tracking-tight text-lg mb-2 text-foreground">Are you
+            sure?</h3>
+        <p id="confirmMessage" class="text-sm text-muted-foreground mb-6">This action cannot be undone.</p>
+        <div class="flex justify-end gap-2">
+            <button id="confirmCancel"
+                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background hover:bg-muted h-9 px-4">Cancel</button>
+            <button id="confirmProceed"
+                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 h-9 px-4">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Reviews Detail Modal -->
+<div id="reviewsModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div
+        class="bg-card rounded-lg border border-border shadow-lg w-full max-w-lg p-6 relative max-h-[80vh] flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold leading-none tracking-tight text-lg">Computer Reviews</h3>
+            <button id="closeReviewsModal" class="text-muted-foreground hover:text-foreground">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+        <div id="modalReviewsList" class="flex-1 overflow-y-auto space-y-3 pr-2">
+            <!-- Reviews will be loaded here -->
+        </div>
+    </div>
+</div>
 </body>
 </html>
