@@ -1,9 +1,6 @@
 {
-  "rewrites": [
-    { "source": "/", "destination": "/index.html" },
-    { "source": "/dashboard.html", "destination": "/dashboard.html" },
-    { "source": "/lab.html", "destination": "/lab.html" },
-    { "source": "/computer.html", "destination": "/computer.html" },
-    { "source": "/js/(.*)", "destination": "/js/$1" }
-  ]
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "cleanUrls": true,
+  "trailingSlash": false
 }
