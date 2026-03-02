@@ -47,4 +47,9 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         showToast(msg, 'error');
     }
 });
-
+// Password Toggle
+document.getElementById('togglePassword')?.addEventListener('click', () => {
+    const input = document.getElementById('password');
+    const type = input.type === 'password' ? 'text' : 'password';
+    input.type = type;
+});

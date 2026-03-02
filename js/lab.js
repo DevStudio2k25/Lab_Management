@@ -1,6 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
 import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc, query, where, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import firebaseConfig from './firebase-config.js';
 
 const app = initializeApp(firebaseConfig);
@@ -64,17 +64,21 @@ document.getElementById('confirmProceed').onclick = () => {
 
 // MODALS LOGIC
 const computerModal = document.getElementById('computerModal');
+const editComputerModal = document.getElementById('editComputerModal');
 const reviewsModal = document.getElementById('reviewsModal');
 const openModalBtn = document.getElementById('openAddComputerModal');
 const closeModalBtn = document.getElementById('closeComputerModal');
+const closeEditCompBtn = document.getElementById('closeEditComputerModal');
 const closeReviewsBtn = document.getElementById('closeReviewsModal');
 
 openModalBtn.addEventListener('click', () => computerModal.classList.remove('hidden'));
 closeModalBtn.addEventListener('click', () => computerModal.classList.add('hidden'));
+closeEditCompBtn.addEventListener('click', () => editComputerModal.classList.add('hidden'));
 closeReviewsBtn.addEventListener('click', () => reviewsModal.classList.add('hidden'));
 
 window.addEventListener('click', (e) => {
     if (e.target === computerModal) computerModal.classList.add('hidden');
+    if (e.target === editComputerModal) editComputerModal.classList.add('hidden');
     if (e.target === reviewsModal) reviewsModal.classList.add('hidden');
     if (e.target === confirmModal) confirmModal.classList.add('hidden');
 });
@@ -103,6 +107,7 @@ async function loadLabDetails() {
 }
 
 // ADD COMPUTER
+// ADD COMPUTER
 document.getElementById('addComputerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const number = document.getElementById('computerNumber').value;
@@ -115,12 +120,36 @@ document.getElementById('addComputerForm').addEventListener('submit', async (e) 
             number: parseInt(number),
             details: details,
             password: password,
+            status: 'Working',
             createdAt: new Date().toISOString()
         });
         
         showToast('Computer added successfully');
         document.getElementById('addComputerForm').reset();
         computerModal.classList.add('hidden');
+        loadComputers();
+    } catch (error) {
+        showToast(error.message, 'error');
+    }
+});
+
+// EDIT COMPUTER
+document.getElementById('editComputerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('editCompId').value;
+    const number = document.getElementById('editCompNumber').value;
+    const details = document.getElementById('editCompDetails').value;
+    const password = document.getElementById('editCompPassword').value;
+
+    try {
+        await updateDoc(doc(db, 'computers', id), {
+            number: parseInt(number),
+            details: details,
+            password: password
+        });
+
+        showToast('Computer updated');
+        editComputerModal.classList.add('hidden');
         loadComputers();
     } catch (error) {
         showToast(error.message, 'error');
@@ -180,34 +209,31 @@ async function loadComputers() {
             return;
         }
 
-        // Fetch latest reviews for ALL computers at once to show status
-        const reviewsSnap = await getDocs(collection(db, 'reviews'));
-        const latestStatus = {};
-        reviewsSnap.forEach(r => {
-            const data = r.data();
-            if (!latestStatus[data.computerId] || new Date(data.timestamp) > new Date(latestStatus[data.computerId].timestamp)) {
-                latestStatus[data.computerId] = data;
-            }
-        });
-
         snap.forEach((doc) => {
             const comp = doc.data();
-            const status = latestStatus[doc.id];
-            const isWorking = !status || status.status === 'Working';
+            const isWorking = comp.status !== 'Not Working';
 
             const card = `
                 <div class="rounded-xl border border-border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md">
                     <div class="p-4 flex flex-row items-center justify-between space-y-0 pb-2">
                         <div class="space-y-1">
                             <h3 class="tracking-tight text-lg font-bold">System #${comp.number}</h3>
-                            <div class="flex items-center gap-1.5">
+                            <div class="flex items-center gap-2">
                                 <span class="flex h-2 w-2 rounded-full ${isWorking ? 'bg-green-500' : 'bg-destructive'} animate-pulse"></span>
-                                <span class="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">${status ? (isWorking ? 'Working' : 'Issue Reported') : 'No Reports'}</span>
+                                <span class="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">${isWorking ? 'Working' : 'Not Working'}</span>
                             </div>
                         </div>
-                        <button onclick="deleteComputer('${doc.id}')" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-destructive/10 hover:text-destructive h-8 w-8 text-muted-foreground">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
+                        <div class="flex gap-1">
+                            <button onclick="toggleStatus('${doc.id}', '${comp.status || 'Working'}')" title="Toggle Status" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-muted h-8 w-8 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m4-4l-4-4"></path></svg>
+                            </button>
+                            <button onclick="openEditComputer('${doc.id}', ${comp.number}, '${comp.details}', '${comp.password}')" title="Edit Computer" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-muted h-8 w-8 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            </button>
+                            <button onclick="deleteComputer('${doc.id}')" title="Delete" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-destructive/10 hover:text-destructive h-8 w-8 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
                     </div>
                     <div class="p-4 pt-2">
                         <div class="space-y-1.5 mb-4">
@@ -247,6 +273,17 @@ async function loadComputers() {
 }
 
 // OTHER FUNCTIONS
+window.toggleStatus = async (id, current) => {
+    const next = current === 'Working' ? 'Not Working' : 'Working';
+    try {
+        await updateDoc(doc(db, 'computers', id), { status: next });
+        showToast(`System marked as ${next}`);
+        loadComputers();
+    } catch (e) {
+        showToast('Status update failed', 'error');
+    }
+};
+
 window.downloadQR = (id, num) => {
     const canvas = document.getElementById(`qr-${id}`).querySelector('canvas');
     if (canvas) {
@@ -279,4 +316,25 @@ window.deleteComputer = async (id) => {
 // INITIAL
 loadLabDetails();
 loadComputers();
+
+window.openEditComputer = (id, num, details, pass) => {
+    document.getElementById('editCompId').value = id;
+    document.getElementById('editCompNumber').value = num;
+    document.getElementById('editCompDetails').value = details;
+    document.getElementById('editCompPassword').value = pass;
+    editComputerModal.classList.remove('hidden');
+};
+
+// Password Toggles
+document.getElementById('toggleCompPassword')?.addEventListener('click', () => {
+    const input = document.getElementById('computerPassword');
+    const type = input.type === 'password' ? 'text' : 'password';
+    input.type = type;
+});
+
+document.getElementById('toggleEditCompPassword')?.addEventListener('click', () => {
+    const input = document.getElementById('editCompPassword');
+    const type = input.type === 'password' ? 'text' : 'password';
+    input.type = type;
+});
 

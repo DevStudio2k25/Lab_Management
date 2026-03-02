@@ -77,7 +77,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
             </svg>
-            New Admin
+            Admins <span id="adminCount" class="ml-1.5 px-1.5 py-0.5 bg-primary/10 rounded text-[10px] font-bold">0</span>
         </button>
         <button id="logoutBtn"
             class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background hover:bg-muted h-9 px-4">
@@ -133,6 +133,34 @@
         </div>
     </div>
 
+    <!-- Edit Lab Modal -->
+    <div id="editLabModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-card rounded-lg border border-border shadow-lg w-full max-w-sm p-6 relative">
+            <div class="flex flex-col space-y-1.5 mb-4">
+                <h3 class="font-semibold leading-none tracking-tight text-lg">Edit Lab</h3>
+                <p class="text-sm text-muted-foreground">Modify the name of your lab.</p>
+            </div>
+            <form id="editLabForm" class="space-y-4">
+                <input type="hidden" id="editLabId">
+                <div class="space-y-2">
+                    <label class="text-sm font-medium leading-none">Lab Name</label>
+                    <input type="text" id="editLabName" placeholder="e.g. Computer Lab 1" required
+                        class="flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground">
+                </div>
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-2">
+                    <button type="button" id="closeEditLabModal"
+                        class="mt-2 sm:mt-0 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background hover:bg-muted h-9 px-4">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Create Admin Modal -->
     <div id="adminModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div class="bg-card rounded-lg border border-border shadow-lg w-full max-w-sm p-6 relative">
@@ -150,8 +178,16 @@
                 <div class="space-y-2">
                     <label
                         class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Password</label>
-                    <input type="password" id="newAdminPassword" required placeholder="••••••••"
-                        class="flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground disabled:cursor-not-allowed disabled:opacity-50">
+                    <div class="relative">
+                        <input type="password" id="newAdminPassword" required placeholder="••••••••"
+                            class="flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 pr-10 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground disabled:cursor-not-allowed disabled:opacity-50">
+                        <button type="button" id="toggleNewAdminPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-2">
                     <button type="button" id="closeAdminModal"

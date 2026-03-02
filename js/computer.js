@@ -38,18 +38,33 @@ async function loadComputerDetails() {
         const docSnap = await getDoc(doc(db, 'computers', computerId));
         if (docSnap.exists()) {
             const data = docSnap.data();
+            const isWorking = data.status !== 'Not Working';
+
             document.getElementById('computerInfo').innerHTML = `
                 <div class="space-y-3">
-                    <div class="flex items-center gap-3 p-3 rounded-lg border bg-muted/20">
-                        <div class="h-10 w-10 rounded bg-primary/10 flex items-center justify-center text-primary">
-                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <div class="flex items-center gap-3 p-4 rounded-xl border ${isWorking ? 'border-green-100 bg-green-50/30' : 'border-destructive/10 bg-destructive/5'}">
+                        <div class="h-10 w-10 rounded-full ${isWorking ? 'bg-green-100 text-green-700' : 'bg-destructive/10 text-destructive'} flex items-center justify-center">
+                            ${isWorking
+                    ? '<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>'
+                    : '<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>'
+                            }
                         </div>
                         <div>
-                            <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">System Number</p>
-                            <p class="text-xl font-bold">#${data.number}</p>
+                            <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Current Status</p>
+                            <p class="text-lg font-bold ${isWorking ? 'text-green-700' : 'text-destructive'}">${isWorking ? 'System is Working' : 'Out of Order / Issue'}</p>
                         </div>
                     </div>
+
                     <div class="grid grid-cols-1 gap-3">
+                        <div class="p-3 rounded-lg border bg-muted/20 flex items-center gap-3">
+                             <div class="h-8 w-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+                                <span class="text-xs font-bold">#</span>
+                            </div>
+                            <div>
+                                <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">System ID</p>
+                                <p class="text-sm font-bold">PC #${data.number}</p>
+                            </div>
+                        </div>
                         <div class="p-3 rounded-lg border">
                             <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Specifications</p>
                             <p class="text-sm font-medium flex items-center gap-2">

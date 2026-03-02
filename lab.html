@@ -138,8 +138,20 @@
                 </div>
                 <div class="space-y-2">
                     <label class="text-sm font-medium leading-none">Computer Password</label>
-                    <input type="text" id="computerPassword" placeholder="e.g. password123" required
-                        class="flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground">
+                    <div class="relative">
+                        <input type="password" id="computerPassword" placeholder="e.g. password123" required
+                            class="flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 pr-10 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground">
+                        <button type="button" id="toggleCompPassword"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+                                </path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
     
                 <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4">
@@ -150,6 +162,55 @@
                     <button type="submit"
                         class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4">
                         Add Computer
+                    </button>
+                </div>
+            </form>
+        </div>
+    <!-- Edit Computer Modal -->
+    <div id="editComputerModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-card rounded-lg border border-border shadow-lg w-full max-w-md p-6 relative">
+            <div class="flex flex-col space-y-1.5 mb-6">
+                <h3 class="font-semibold leading-none tracking-tight text-lg">Edit Computer</h3>
+                <p class="text-sm text-muted-foreground">Update details for this system.</p>
+            </div>
+            <form id="editComputerForm" class="space-y-4">
+                <input type="hidden" id="editCompId">
+                <div class="space-y-2">
+                    <label class="text-sm font-medium leading-none">Computer Number</label>
+                    <input type="number" id="editCompNumber" placeholder="e.g. 101" required
+                        class="flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-medium leading-none">System Details</label>
+                    <input type="text" id="editCompDetails" placeholder="e.g. i5, 8GB RAM" required
+                        class="flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-medium leading-none">Computer Password</label>
+                    <div class="relative">
+                        <input type="password" id="editCompPassword" placeholder="e.g. password123" required
+                            class="flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 pr-10 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground">
+                        <button type="button" id="toggleEditCompPassword"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+    
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4">
+                    <button type="button" id="closeEditComputerModal"
+                        class="mt-2 sm:mt-0 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background hover:bg-muted h-9 px-4">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4">
+                        Save Changes
                     </button>
                 </div>
             </form>
