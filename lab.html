@@ -59,17 +59,85 @@
         body {
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
+
+        /* Mobile: List Layout (Stack) */
+        .masonry-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Desktop: Grid Layout */
+        @media (min-width: 1024px) {
+            .masonry-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1rem;
+            }
+        }
+
+        .computer-card {
+            width: 100%;
+        }
+
+        /* Smooth expand/collapse animation */
+        .expandable-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Card hover effect */
+        .computer-card {
+            transition: all 0.3s ease;
+        }
+
+        .computer-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .computer-card.expanded {
+            transform: none;
+        }
+
+        /* Smooth icon rotation */
+        .computer-card svg {
+            transition: transform 0.3s ease;
+        }
+
+        /* Button hover effects */
+        button {
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
     </style>
 </head>
 <body class="bg-muted/30 min-h-screen text-foreground flex flex-col">
     <!-- Header -->
     <header class="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-border bg-background px-4 sm:px-6">
+        <button id="mobileMenuBtn" class="sm:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+            </svg>
+        </button>
         <a href="./dashboard.html"
-            class="inline-flex items-center text-sm font-medium transition-colors hover:text-foreground/80 text-foreground">
+            class="hidden sm:inline-flex items-center text-sm font-medium transition-colors hover:text-foreground/80 text-foreground">
             <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
-            <span class="hidden sm:inline">Dashboard</span>
+            Dashboard
         </a>
         <h1 id="labTitle" class="text-sm font-semibold ml-2 sm:ml-4 truncate flex items-center gap-2">
             <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,10 +145,10 @@
                     d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                 </path>
             </svg>
-            Loading Lab...
+            <span class="truncate">Loading...</span>
         </h1>
     
-        <div class="ml-auto flex items-center gap-2">
+        <div class="ml-auto hidden sm:flex items-center gap-2">
             <button id="openAddComputerModal"
                 class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4">
                 <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,15 +157,57 @@
                 Computer
             </button>
             <button id="bulkDownloadBtn"
-                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background hover:bg-muted h-9 px-3 sm:px-4">
-                <svg class="sm:mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background hover:bg-muted h-9 px-4">
+                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                 </svg>
-                <span class="hidden sm:inline">Bulk QR</span>
+                Bulk QR
             </button>
         </div>
     </header>
+
+    <!-- Mobile Sidebar -->
+    <div id="sidebarOverlay" class="hidden fixed inset-0 bg-black/50 z-[40] transition-opacity duration-300 opacity-0">
+    </div>
+    <aside id="sidebar"
+        class="fixed inset-y-0 left-0 w-64 bg-background border-r border-border z-[50] transition-transform duration-300 -translate-x-full lg:hidden flex flex-col">
+        <div class="p-6 border-b border-border flex items-center justify-between">
+            <span class="font-bold truncate" id="sidebarLabName">Lab Details</span>
+            <button id="closeSidebar" class="p-2 -mr-2 text-muted-foreground hover:text-foreground">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="flex-1 p-4 space-y-2">
+            <a href="./dashboard.html"
+                class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-secondary text-sm font-medium transition-colors text-foreground">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+                </svg>
+                Go to Dashboard
+            </a>
+            <button id="sidebarAddComp"
+                class="flex w-full items-center gap-3 px-3 py-2 rounded-md hover:bg-secondary text-sm font-medium transition-colors">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Add Computer
+            </button>
+            <button id="sidebarBulkQR"
+                class="flex w-full items-center gap-3 px-3 py-2 rounded-md hover:bg-secondary text-sm font-medium transition-colors">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                Download Bulk QRs
+            </button>
+        </div>
+    </aside>
 
     <main class="flex-1 p-4 sm:p-6 sm:max-w-6xl mx-auto w-full">
         <!-- Computers List Header -->
@@ -112,8 +222,8 @@
             </h2>
         </div>
     
-        <!-- Computers Grid -->
-        <div id="computersList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Computers Grid/List - Grid on Desktop, List on Mobile -->
+        <div id="computersList" class="masonry-grid">
             <!-- Computers will be loaded here -->
         </div>
     </main>
@@ -153,6 +263,29 @@
                         </button>
                     </div>
                 </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-medium leading-none">Initial Status</label>
+                    <div class="relative" id="computerStatusDropdown">
+                        <button type="button"
+                            class="flex h-9 w-full items-center justify-between rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-foreground">
+                            <span class="selected-value">Working</span>
+                            <svg class="h-4 w-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div
+                            class="dropdown-options hidden absolute z-50 mt-1 w-full rounded-md border border-border bg-card shadow-lg animate-in fade-in zoom-in-95 duration-200">
+                            <div class="p-1">
+                                <button type="button" data-value="Working"
+                                    class="flex w-full items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-muted transition-colors">Working</button>
+                                <button type="button" data-value="Not Working"
+                                    class="flex w-full items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-muted transition-colors">Not
+                                    Working</button>
+                            </div>
+                        </div>
+                        <input type="hidden" id="computerStatus" value="Working">
+                    </div>
+                </div>
     
                 <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4">
                     <button type="button" id="closeComputerModal"
@@ -166,6 +299,8 @@
                 </div>
             </form>
         </div>
+    </div>
+
     <!-- Edit Computer Modal -->
     <div id="editComputerModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div class="bg-card rounded-lg border border-border shadow-lg w-full max-w-md p-6 relative">
@@ -200,6 +335,29 @@
                                 </path>
                             </svg>
                         </button>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-medium leading-none">Status</label>
+                    <div class="relative" id="editCompStatusDropdown">
+                        <button type="button"
+                            class="flex h-9 w-full items-center justify-between rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-foreground">
+                            <span class="selected-value">Working</span>
+                            <svg class="h-4 w-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div
+                            class="dropdown-options hidden absolute z-50 mt-1 w-full rounded-md border border-border bg-card shadow-lg animate-in fade-in zoom-in-95 duration-200">
+                            <div class="p-1">
+                                <button type="button" data-value="Working"
+                                    class="flex w-full items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-muted transition-colors">Working</button>
+                                <button type="button" data-value="Not Working"
+                                    class="flex w-full items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-muted transition-colors">Not
+                                    Working</button>
+                            </div>
+                        </div>
+                        <input type="hidden" id="editCompStatus" value="Working">
                     </div>
                 </div>
     

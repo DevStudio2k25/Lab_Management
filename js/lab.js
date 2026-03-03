@@ -62,57 +62,171 @@ document.getElementById('confirmProceed').onclick = () => {
     if (confirmPromise) confirmPromise(true);
 };
 
-// MODALS LOGIC
-const computerModal = document.getElementById('computerModal');
-const editComputerModal = document.getElementById('editComputerModal');
-const reviewsModal = document.getElementById('reviewsModal');
-const openModalBtn = document.getElementById('openAddComputerModal');
-const closeModalBtn = document.getElementById('closeComputerModal');
-const closeEditCompBtn = document.getElementById('closeEditComputerModal');
-const closeReviewsBtn = document.getElementById('closeReviewsModal');
-
-openModalBtn.addEventListener('click', () => computerModal.classList.remove('hidden'));
-closeModalBtn.addEventListener('click', () => computerModal.classList.add('hidden'));
-closeEditCompBtn.addEventListener('click', () => editComputerModal.classList.add('hidden'));
-closeReviewsBtn.addEventListener('click', () => reviewsModal.classList.add('hidden'));
-
-window.addEventListener('click', (e) => {
-    if (e.target === computerModal) computerModal.classList.add('hidden');
-    if (e.target === editComputerModal) editComputerModal.classList.add('hidden');
-    if (e.target === reviewsModal) reviewsModal.classList.add('hidden');
-    if (e.target === confirmModal) confirmModal.classList.add('hidden');
-});
-
-// LOAD LAB DETAILS
+// Get lab ID from URL
 const urlParams = new URLSearchParams(window.location.search);
 const labId = urlParams.get('id');
 
 if (!labId) {
-    showToast('Invalid Lab ID', 'error');
-    setTimeout(() => window.location.href = './dashboard.html', 2000);
+    showToast('Invalid lab ID', 'error');
+    setTimeout(() => window.location.href = './dashboard.html', 1000);
 }
 
+// MODALS LOGIC
+const computerModal = document.getElementById('computerModal');
+const editComputerModal = document.getElementById('editComputerModal');
+const reviewsModal = document.getElementById('reviewsModal');
+
+// Modal Open/Close Handlers
+document.getElementById('openAddComputerModal')?.addEventListener('click', () => {
+    computerModal.classList.remove('hidden');
+});
+
+document.getElementById('closeComputerModal')?.addEventListener('click', () => {
+    computerModal.classList.add('hidden');
+});
+
+document.getElementById('closeEditComputerModal')?.addEventListener('click', () => {
+    editComputerModal.classList.add('hidden');
+});
+
+document.getElementById('closeReviewsModal')?.addEventListener('click', () => {
+    reviewsModal.classList.add('hidden');
+});
+
+// Close modals on outside click
+window.addEventListener('click', (e) => {
+    if (e.target === computerModal) computerModal.classList.add('hidden');
+    if (e.target === editComputerModal) editComputerModal.classList.add('hidden');
+    if (e.target === reviewsModal) reviewsModal.classList.add('hidden');
+});
+
+// EXPORT TO WINDOW (TOP LEVEL)
+window.showReviews = async (computerId) => {
+    const reviewsList = document.getElementById('modalReviewsList');
+    reviewsList.innerHTML = '<p class="text-center text-sm text-muted-foreground animate-pulse py-8">Loading history...</p>';
+    reviewsModal.classList.remove('hidden');
+
+    try {
+        const q = query(collection(db, 'reviews'), where('computerId', '==', computerId));
+        const snap = await getDocs(q);
+        reviewsList.innerHTML = '';
+
+        if (snap.empty) {
+            reviewsList.innerHTML = '<div class="text-center py-8 text-muted-foreground text-sm border border-dashed rounded-lg px-4">No report history found for this system.</div>';
+            return;
+        }
+
+        const reviewsData = snap.docs.map(d => d.data());
+        reviewsData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        reviewsData.forEach(r => {
+            const isWorking = r.status === 'Working';
+            reviewsList.innerHTML += `
+                <div class="p-4 rounded-xl border text-sm transition-all hover:shadow-sm ${isWorking ? 'border-green-100 bg-green-50/20' : 'border-destructive/10 bg-destructive/5'}">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${isWorking ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                            ${isWorking ? 'Working' : 'Issue Reported'}
+                        </span>
+                        <span class="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            ${new Date(r.timestamp).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                        </span>
+                    </div>
+                    ${r.comment ? `<p class="mt-2 text-xs text-foreground/80 leading-relaxed font-medium pl-1 border-l-2 border-primary/10">${r.comment}</p>` : ''}
+                </div>
+            `;
+        });
+    } catch (e) {
+        console.error('Reviews error:', e);
+        showToast('Error loading reviews', 'error');
+    }
+};
+
+window.openEditComputer = (id, num, details, pass, status) => {
+    document.getElementById('editCompId').value = id;
+    document.getElementById('editCompNumber').value = num;
+    document.getElementById('editCompDetails').value = details;
+    document.getElementById('editCompPassword').value = pass;
+    updateCustomDropdown('editCompStatusDropdown', status || 'Working');
+    editComputerModal.classList.remove('hidden');
+};
+
+// CUSTOM DROPDOWN UTILITY
+function initCustomDropdown(id) {
+    const container = document.getElementById(id);
+    if (!container) return;
+
+    const btn = container.querySelector('button');
+    const options = container.querySelector('.dropdown-options');
+    const hiddenInput = container.querySelector('input[type="hidden"]');
+    const labelSpan = container.querySelector('.selected-value');
+
+    btn.onclick = (e) => {
+        e.stopPropagation();
+        const isHidden = options.classList.contains('hidden');
+        // Close all other dropdowns
+        document.querySelectorAll('.dropdown-options').forEach(el => el.classList.add('hidden'));
+        if (isHidden) options.classList.remove('hidden');
+    };
+
+    options.querySelectorAll('button').forEach(opt => {
+        opt.onclick = () => {
+            const val = opt.getAttribute('data-value');
+            hiddenInput.value = val;
+            labelSpan.textContent = opt.textContent;
+            options.classList.add('hidden');
+        };
+    });
+}
+
+function updateCustomDropdown(id, value) {
+    const container = document.getElementById(id);
+    if (!container) return;
+    const hiddenInput = container.querySelector('input[type="hidden"]');
+    const labelSpan = container.querySelector('.selected-value');
+    hiddenInput.value = value;
+    labelSpan.textContent = value;
+}
+
+document.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown-options').forEach(el => el.classList.add('hidden'));
+});
+
+initCustomDropdown('computerStatusDropdown');
+initCustomDropdown('editCompStatusDropdown');
+
+// LOAD LAB DETAILS
 async function loadLabDetails() {
     try {
         const labDoc = await getDoc(doc(db, 'labs', labId));
         if (labDoc.exists()) {
+            const labData = labDoc.data();
             document.getElementById('labTitle').innerHTML = `
-                <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                ${labDoc.data().name}
+                <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                    </path>
+                </svg>
+                <span class="truncate">${labData.name}</span>
             `;
+            document.getElementById('sidebarLabName').textContent = labData.name;
+        } else {
+            showToast('Lab not found', 'error');
+            setTimeout(() => window.location.href = './dashboard.html', 1000);
         }
     } catch (error) {
         console.error('Error loading lab:', error);
+        showToast('Error loading lab details', 'error');
     }
 }
 
-// ADD COMPUTER
 // ADD COMPUTER
 document.getElementById('addComputerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const number = document.getElementById('computerNumber').value;
     const details = document.getElementById('computerDetails').value;
     const password = document.getElementById('computerPassword').value;
+    const status = document.getElementById('computerStatus').value;
     
     try {
         await addDoc(collection(db, 'computers'), {
@@ -120,7 +234,7 @@ document.getElementById('addComputerForm').addEventListener('submit', async (e) 
             number: parseInt(number),
             details: details,
             password: password,
-            status: 'Working',
+            status: status,
             createdAt: new Date().toISOString()
         });
         
@@ -140,12 +254,14 @@ document.getElementById('editComputerForm').addEventListener('submit', async (e)
     const number = document.getElementById('editCompNumber').value;
     const details = document.getElementById('editCompDetails').value;
     const password = document.getElementById('editCompPassword').value;
+    const status = document.getElementById('editCompStatus').value;
 
     try {
         await updateDoc(doc(db, 'computers', id), {
             number: parseInt(number),
             details: details,
-            password: password
+            password: password,
+            status: status
         });
 
         showToast('Computer updated');
@@ -155,44 +271,6 @@ document.getElementById('editComputerForm').addEventListener('submit', async (e)
         showToast(error.message, 'error');
     }
 });
-
-// REVIEWS LOGIC
-window.showReviews = async (computerId) => {
-    const reviewsList = document.getElementById('modalReviewsList');
-    reviewsList.innerHTML = '<p class="text-center text-sm text-muted-foreground animate-pulse py-8">Loading history...</p>';
-    reviewsModal.classList.remove('hidden');
-
-    try {
-        const q = query(collection(db, 'reviews'), where('computerId', '==', computerId));
-        const snap = await getDocs(q);
-        reviewsList.innerHTML = '';
-
-        if (snap.empty) {
-            reviewsList.innerHTML = '<div class="text-center py-8 text-muted-foreground text-sm border border-dashed rounded-lg">No history found.</div>';
-            return;
-        }
-
-        const reviews = snap.docs.map(d => d.data());
-        reviews.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-        reviews.forEach(r => {
-            const isWorking = r.status === 'Working';
-            reviewsList.innerHTML += `
-                <div class="p-3 rounded-lg border text-sm ${isWorking ? 'border-green-100 bg-green-50/30' : 'border-destructive/10 bg-destructive/5'}">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${isWorking ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                            ${isWorking ? 'Working' : 'Issue Reported'}
-                        </span>
-                        <span class="text-[10px] text-muted-foreground">${new Date(r.timestamp).toLocaleString()}</span>
-                    </div>
-                    ${r.comment ? `<p class="mt-1 text-xs opacity-80">${r.comment}</p>` : ''}
-                </div>
-            `;
-        });
-    } catch (e) {
-        showToast('Error loading reviews', 'error');
-    }
-};
 
 // LOAD COMPUTERS
 async function loadComputers() {
@@ -214,48 +292,76 @@ async function loadComputers() {
             const isWorking = comp.status !== 'Not Working';
 
             const card = `
-                <div class="rounded-xl border border-border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md">
-                    <div class="p-4 flex flex-row items-center justify-between space-y-0 pb-2">
-                        <div class="space-y-1">
-                            <h3 class="tracking-tight text-lg font-bold">System #${comp.number}</h3>
-                            <div class="flex items-center gap-2">
-                                <span class="flex h-2 w-2 rounded-full ${isWorking ? 'bg-green-500' : 'bg-destructive'} animate-pulse"></span>
-                                <span class="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">${isWorking ? 'Working' : 'Not Working'}</span>
+                <div class="computer-card rounded-xl border border-border bg-card text-card-foreground shadow-sm hover:shadow-md overflow-hidden transition-all duration-300">
+                    <!-- Compact Header -->
+                    <div class="p-4 flex flex-row items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors" onclick="toggleCardDetails('${doc.id}')">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-primary font-bold text-sm border border-primary/10">
+                                #${comp.number}
+                            </div>
+                            <div class="space-y-0.5">
+                                <h3 class="font-bold text-sm">System ${comp.number}</h3>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="flex h-2 w-2 rounded-full ${isWorking ? 'bg-green-500' : 'bg-destructive'} ${isWorking ? 'animate-pulse' : ''}"></span>
+                                    <span class="text-[10px] font-medium uppercase tracking-tight text-muted-foreground">${isWorking ? 'Working' : 'Not Working'}</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="flex gap-1">
-                            <button onclick="toggleStatus('${doc.id}', '${comp.status || 'Working'}')" title="Toggle Status" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-muted h-8 w-8 text-muted-foreground">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m4-4l-4-4"></path></svg>
-                            </button>
-                            <button onclick="openEditComputer('${doc.id}', ${comp.number}, '${comp.details}', '${comp.password}')" title="Edit Computer" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-muted h-8 w-8 text-muted-foreground">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            </button>
-                            <button onclick="deleteComputer('${doc.id}')" title="Delete" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-destructive/10 hover:text-destructive h-8 w-8 text-muted-foreground">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        </div>
+                        <svg id="icon-${doc.id}" class="h-5 w-5 text-muted-foreground transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
                     </div>
-                    <div class="p-4 pt-2">
-                        <div class="space-y-1.5 mb-4">
-                            <div class="flex items-center gap-2 text-xs text-muted-foreground">
-                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
-                                <span>${comp.details}</span>
+
+                    <!-- Expandable Content with smooth height transition -->
+                    <div id="details-${doc.id}" class="expandable-content max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
+                        <div class="border-t border-border bg-muted/20">
+                            <div class="p-4 space-y-4">
+                                <!-- Specs & Info -->
+                                <div class="grid grid-cols-1 gap-3">
+                                    <div class="p-3 rounded-lg border bg-background/50 space-y-1.5 hover:bg-background transition-colors">
+                                        <p class="text-[9px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1">
+                                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                            Specifications
+                                        </p>
+                                        <p class="text-sm font-medium text-foreground">${comp.details}</p>
+                                    </div>
+                                    <div class="p-3 rounded-lg border bg-background/50 space-y-1.5 hover:bg-background transition-colors">
+                                        <p class="text-[9px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1">
+                                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                                            Password
+                                        </p>
+                                        <p class="text-sm font-mono font-bold text-foreground">${comp.password}</p>
+                                    </div>
+                                </div>
+
+                                <!-- QR Code -->
+                                <div class="flex justify-center">
+                                    <div id="qr-${doc.id}" class="bg-white p-3 border-2 border-border rounded-xl shadow-sm"></div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="grid grid-cols-5 gap-2">
+                                    <button onclick="toggleStatus('${doc.id}', '${comp.status}')" class="col-span-2 inline-flex items-center justify-center rounded-lg border border-border bg-background hover:bg-primary hover:text-primary-foreground hover:border-primary h-9 text-xs font-medium transition-all duration-200">
+                                        <svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m4-4l-4-4"></path></svg> 
+                                        Status
+                                    </button>
+                                    <button onclick="window.downloadQR('${doc.id}', ${comp.number})" class="inline-flex items-center justify-center rounded-lg border border-border bg-background hover:bg-muted h-9 transition-all duration-200" title="Download QR">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                    </button>
+                                    <button onclick="window.showReviews('${doc.id}')" class="inline-flex items-center justify-center rounded-lg border border-border bg-background hover:bg-muted h-9 transition-all duration-200" title="View Reviews">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                    </button>
+                                    <button onclick="window.openEditComputer('${doc.id}', ${comp.number}, '${comp.details}', '${comp.password}', '${comp.status}')" class="inline-flex items-center justify-center rounded-lg border border-border bg-background hover:bg-muted h-9 transition-all duration-200" title="Edit">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </button>
+                                </div>
+                                
+                                <!-- Delete Button Separate -->
+                                <button onclick="window.deleteComputer('${doc.id}')" class="w-full inline-flex items-center justify-center rounded-lg border border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground h-9 text-xs font-medium transition-all duration-200">
+                                    <svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    Delete Computer
+                                </button>
                             </div>
-                            <div class="flex items-center gap-2 text-xs font-mono bg-muted/50 px-2 py-1 rounded border border-border/50 w-fit">
-                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                                <span>${comp.password}</span>
-                            </div>
-                        </div>
-                        
-                        <div id="qr-${doc.id}" class="mb-4 flex justify-center bg-white p-2 border border-border rounded-lg mx-auto w-fit"></div>
-                        
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="downloadQR('${doc.id}', ${comp.number})" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-medium transition-colors border border-border bg-background hover:bg-muted h-8 px-2">
-                                <svg class="mr-1.5 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> QR
-                            </button>
-                            <button onclick="showReviews('${doc.id}')" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-medium transition-colors bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 h-8 px-2">
-                                <svg class="mr-1.5 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg> Reviews
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -264,7 +370,7 @@ async function loadComputers() {
 
             setTimeout(() => {
                 const qDiv = document.getElementById(`qr-${doc.id}`);
-                if (qDiv) new QRCode(qDiv, { text: `${window.location.origin}/computer.html?id=${doc.id}`, width: 100, height: 100 });
+                if (qDiv) new QRCode(qDiv, { text: `${window.location.origin}/computer.html?id=${doc.id}`, width: 120, height: 120 });
             }, 100);
         });
     } catch (e) {
@@ -273,6 +379,44 @@ async function loadComputers() {
 }
 
 // OTHER FUNCTIONS
+// CARD LOGIC - Define before loadComputers so inline onclick works
+window.toggleCardDetails = (id) => {
+    const details = document.getElementById(`details-${id}`);
+    const icon = document.getElementById(`icon-${id}`);
+    const card = details.closest('.computer-card');
+    
+    // Check if currently expanded
+    const isExpanded = details.style.maxHeight && details.style.maxHeight !== '0px';
+
+    // Close all other cards first for accordion effect
+    document.querySelectorAll('.expandable-content').forEach(el => {
+        if (el.id !== `details-${id}`) {
+            el.style.maxHeight = '0px';
+            const otherIcon = document.getElementById(`icon-${el.id.split('-')[1]}`);
+            if (otherIcon) otherIcon.style.transform = 'rotate(0deg)';
+            el.closest('.computer-card')?.classList.remove('expanded');
+        }
+    });
+
+    // Toggle current card with smooth animation
+    if (isExpanded) {
+        // Collapse
+        details.style.maxHeight = '0px';
+        icon.style.transform = 'rotate(0deg)';
+        card?.classList.remove('expanded');
+    } else {
+        // Expand - set maxHeight to scrollHeight for smooth transition
+        details.style.maxHeight = details.scrollHeight + 'px';
+        icon.style.transform = 'rotate(180deg)';
+        card?.classList.add('expanded');
+        
+        // Scroll card into view smoothly
+        setTimeout(() => {
+            card?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+};
+
 window.toggleStatus = async (id, current) => {
     const next = current === 'Working' ? 'Not Working' : 'Working';
     try {
@@ -294,12 +438,14 @@ window.downloadQR = (id, num) => {
     }
 };
 
-document.getElementById('bulkDownloadBtn').onclick = async () => {
+window.downloadBulkQRs = async () => {
     showToast('Starting bulk download...');
     const q = query(collection(db, 'computers'), where('labId', '==', labId));
     const snap = await getDocs(q);
     snap.forEach((d, i) => setTimeout(() => window.downloadQR(d.id, d.data().number), i * 500));
 };
+
+document.getElementById('bulkDownloadBtn').onclick = window.downloadBulkQRs;
 
 window.deleteComputer = async (id) => {
     if (await showConfirm('Delete Computer', 'Are you sure you want to remove this system? All related reviews will remain in history but the system card will be gone.')) {
@@ -317,24 +463,60 @@ window.deleteComputer = async (id) => {
 loadLabDetails();
 loadComputers();
 
-window.openEditComputer = (id, num, details, pass) => {
-    document.getElementById('editCompId').value = id;
-    document.getElementById('editCompNumber').value = num;
-    document.getElementById('editCompDetails').value = details;
-    document.getElementById('editCompPassword').value = pass;
-    editComputerModal.classList.remove('hidden');
-};
-
 // Password Toggles
-document.getElementById('toggleCompPassword')?.addEventListener('click', () => {
+document.getElementById('toggleCompPassword')?.addEventListener('click', function () {
     const input = document.getElementById('computerPassword');
     const type = input.type === 'password' ? 'text' : 'password';
     input.type = type;
+    this.innerHTML = type === 'password'
+        ? `<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>`
+        : `<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>`;
 });
 
-document.getElementById('toggleEditCompPassword')?.addEventListener('click', () => {
+document.getElementById('toggleEditCompPassword')?.addEventListener('click', function () {
     const input = document.getElementById('editCompPassword');
     const type = input.type === 'password' ? 'text' : 'password';
     input.type = type;
+    this.innerHTML = type === 'password'
+        ? `<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>`
+        : `<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>`;
 });
+
+// Sidebar Logic
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const closeSidebarBtn = document.getElementById('closeSidebar');
+
+function toggleSidebar(show) {
+    if (show) {
+        sidebarOverlay.classList.remove('hidden');
+        setTimeout(() => {
+            sidebarOverlay.classList.replace('opacity-0', 'opacity-100');
+            sidebar.classList.replace('-translate-x-full', 'translate-x-0');
+        }, 10);
+    } else {
+        sidebarOverlay.classList.replace('opacity-100', 'opacity-0');
+        sidebar.classList.replace('translate-x-0', '-translate-x-full');
+        setTimeout(() => {
+            sidebarOverlay.classList.add('hidden');
+        }, 300);
+    }
+}
+
+mobileMenuBtn?.addEventListener('click', () => toggleSidebar(true));
+closeSidebarBtn?.addEventListener('click', () => toggleSidebar(false));
+sidebarOverlay?.addEventListener('click', () => toggleSidebar(false));
+
+// Sidebar Actions
+document.getElementById('sidebarAddComp')?.addEventListener('click', () => {
+    toggleSidebar(false);
+    computerModal.classList.remove('hidden');
+});
+
+document.getElementById('sidebarBulkQR')?.addEventListener('click', () => {
+    toggleSidebar(false);
+    window.downloadBulkQRs();
+});
+
 

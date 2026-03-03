@@ -94,8 +94,16 @@ document.getElementById('createAdminForm').addEventListener('submit', async (e) 
     }
     
     try {
-        // Use a secondary app instance to create admin without logging out current user
-        const secondaryApp = initializeApp(firebaseConfig, 'Secondary');
+        // Find or Create secondary app instance
+        let secondaryApp;
+        try {
+            secondaryApp = initializeApp(firebaseConfig, 'Secondary');
+        } catch (e) {
+            // Already initialized, get existing
+            const { getApp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
+            secondaryApp = getApp('Secondary');
+        }
+
         const secondaryAuth = getAuth(secondaryApp);
 
         const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
@@ -105,18 +113,18 @@ document.getElementById('createAdminForm').addEventListener('submit', async (e) 
             role: 'admin',
             createdAt: new Date().toISOString()
         });
-        
-        // Cleanup secondary app
-        await signOut(secondaryAuth);
-        // Note: deleteApp is not strictly needed for quick scripts but good practice if available
 
-        showToast('Admin account created: ' + email);
+        await signOut(secondaryAuth);
+
+        showToast('Admin account created successfully');
         adminModal.classList.add('hidden');
         document.getElementById('createAdminForm').reset();
         loadAdminCount();
     } catch (error) {
+        console.error('Full Error:', error);
         let msg = error.message;
         if (error.code === 'auth/email-already-in-use') msg = 'Email already registered';
+        if (error.code === 'auth/admin-restricted-operation') msg = 'Firebase Console setup missing for admin creation';
         showToast(msg, 'error');
     }
 });
@@ -251,9 +259,50 @@ window.openEditLab = (id, currentName) => {
 };
 
 // Password Toggle
-document.getElementById('toggleNewAdminPassword')?.addEventListener('click', () => {
+document.getElementById('toggleNewAdminPassword')?.addEventListener('click', function () {
     const input = document.getElementById('newAdminPassword');
     const type = input.type === 'password' ? 'text' : 'password';
     input.type = type;
+
+    this.innerHTML = type === 'password'
+        ? `<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>`
+        : `<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>`;
+});
+
+// Sidebar Logic
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const closeSidebarBtn = document.getElementById('closeSidebar');
+
+function toggleSidebar(show) {
+    if (show) {
+        sidebarOverlay.classList.remove('hidden');
+        setTimeout(() => {
+            sidebarOverlay.classList.replace('opacity-0', 'opacity-100');
+            sidebar.classList.replace('-translate-x-full', 'translate-x-0');
+        }, 10);
+    } else {
+        sidebarOverlay.classList.replace('opacity-100', 'opacity-0');
+        sidebar.classList.replace('translate-x-0', '-translate-x-full');
+        setTimeout(() => {
+            sidebarOverlay.classList.add('hidden');
+        }, 300);
+    }
+}
+
+mobileMenuBtn?.addEventListener('click', () => toggleSidebar(true));
+closeSidebarBtn?.addEventListener('click', () => toggleSidebar(false));
+sidebarOverlay?.addEventListener('click', () => toggleSidebar(false));
+
+// Sidebar Actions
+document.getElementById('sidebarCreateAdminBtn')?.addEventListener('click', () => {
+    toggleSidebar(false);
+    adminModal.classList.remove('hidden');
+});
+
+document.getElementById('sidebarLogoutBtn')?.addEventListener('click', () => {
+    toggleSidebar(false);
+    signOut(auth);
 });
 
